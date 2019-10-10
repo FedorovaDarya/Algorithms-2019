@@ -2,6 +2,13 @@ package lesson1;
 
 import kotlin.NotImplementedError;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
 @SuppressWarnings("unused")
 public class JavaTasks {
     /**
@@ -34,9 +41,66 @@ public class JavaTasks {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    static public void sortTimes(String inputName, String outputName) {
-        throw new NotImplementedError();
+    private static String intTimeToString(int intTime) {
+        String res = "";
+        Formatter f = new Formatter();
+        if (intTime < 3600) {
+            res = f.format("%02d:%02d:%02d ", 12, (intTime / 60), (intTime % 60)).toString();
+        } else {
+            res = f.format("%02d:%02d:%02d ", intTime / 3600, (intTime % 3600) / 60, (intTime % 3600) % 60).toString();
+        }
+        return res;
     }
+    static void sortTimes(String inputName, String outputName) {
+        List<Integer> listAM = new ArrayList<>();
+        List<Integer> listPM = new ArrayList<>();
+        int[] curr = new int[3];
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(inputName));
+            String str = "";
+            while ((str = br.readLine()) != null) {
+                if (str.matches("(\\d\\d):(\\d\\d):(\\d\\d) (AM|PM)")) {
+                    String[] temp = str.split(" ");
+                    for (int i = 0; i < 3; i++)
+                        curr[i] = Integer.parseInt(temp[0].split(":")[i]);
+                    if ((curr[0] > 12 || curr[0] < 0) || (curr[1] > 59 || curr[1] < 0) || (curr[2] > 59 || curr[2] < 0))
+                        throw new IllegalArgumentException();
+                    int e = curr[0] % 12 * 60 * 60 + curr[1] * 60 + curr[2];
+                    if (temp[1].equals("AM")) {
+                        listAM.add(e); //т.е. переводим в секунды
+                    } else {                                   //%12 потому что часы начинаются с 12 как с нуля
+                        listPM.add(e);
+                    }
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+            br.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        Comparator<Integer> compare = Integer::compareTo;
+
+        listAM.sort(compare);
+        listPM.sort(compare);
+
+        try (FileWriter writer = new FileWriter(outputName)) {
+            StringBuilder sb = new StringBuilder();
+            for (int t : listAM) {
+                sb.append(intTimeToString(t)).append("AM").append("\n");
+            }
+            for (int t : listPM) {
+                sb.append(intTimeToString(t)).append("PM").append("\n");
+            }
+            writer.write(sb.toString());
+            writer.flush();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
 
     /**
      * Сортировка адресов
@@ -64,9 +128,76 @@ public class JavaTasks {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    static public void sortAddresses(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static void sortAddresses(String inputName, String outputName) {
+        HashMap<String, ArrayList<Name>> data = new HashMap();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));
+            String[] temp;
+            String str = "";
+            while ((str = br.readLine()) != null) {
+                if (!str.toLowerCase().matches("\\S+ \\S+ - \\S+ \\d+"))
+                    throw new IllegalArgumentException();
+                temp = str.split(" ");
+                String address = temp[3] + " " + Integer.parseInt(temp[4]);
+                Name person = new Name(temp[1], temp[0]);
+
+                if (!data.containsKey(address)) {
+                    data.put(address, new ArrayList<>(Collections.singletonList(person)));
+                } else {
+                    data.get(address).add(person);
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        Comparator<String> compareAddresses = Comparator.comparing(str -> str.split(" ")[0]);
+        compareAddresses = compareAddresses.thenComparing(str -> Integer.parseInt(str.split(" ")[1]));
+
+        List<String> dataKeys = new ArrayList<>(data.keySet());
+        Collections.sort(dataKeys, compareAddresses);
+
+        try (FileWriter writer = new FileWriter(outputName, StandardCharsets.UTF_8)) {
+            StringBuilder sb = new StringBuilder();
+            for (String a : dataKeys) {
+                StringBuilder s = new StringBuilder(a + " -");
+                ArrayList<Name> n = data.get(a);
+                Collections.sort(n);
+                for (Name name : n)
+                    s.append(" ").append(name.last).append(" ").append(name.first).append(",");
+                s.deleteCharAt(s.length() - 1);
+                sb.append(s).append("\n");
+            }
+            writer.write(sb.toString());
+            writer.flush();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
+
+    static class Name implements Comparable<Name> {
+        private String first;
+        private String last;
+
+        Name(String first, String last) {
+            this.first = first;
+            this.last = last;
+        }
+
+        @Override
+        public int compareTo(Name name) {
+            if (last.equals(name.last)) return first.compareTo(name.first);
+            else {
+                if (last.compareTo(name.last) > 0)
+                    return 1;
+                else
+                    return -1;
+            }
+        }
+    }
+
+    //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
 
     /**
      * Сортировка температур
@@ -99,8 +230,64 @@ public class JavaTasks {
      * 121.3
      */
     static public void sortTemperatures(String inputName, String outputName) {
-        throw new NotImplementedError();
+        int[] data = new int[2730 + 1 + 5000 + 1];//там ведь есть + 0 и - 0?
+        try (BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));) {
+            String str = "";
+            while ((str = br.readLine()) != null){
+                if(!str.matches("-?[0-9]{1,3}\\.[0-9]")){
+                    throw  new IllegalArgumentException();
+                }
+                int curr = (int)(Float.parseFloat(str) * 10);
+                if(str.charAt(0) == '-'){
+                    data[Math.abs(curr + 2730)]++;                // -273.0 лежит в индексе 0, -0.0 в 2730
+                } else{
+                    data[curr + 2731]++;
+                }
+            }
+            try (FileWriter writer = new FileWriter(outputName)) {
+                StringBuilder sb = new StringBuilder();
+                for(int i = 0; i <= 2730; i++){
+                    if(data[i] > 0)
+                        for(int j = 0; j < data[i]; j++)
+                            sb.append("-").append(Math.abs((i - 2730) / 10)).append(".").
+                                    append((Math.abs(i - 2730)) % 10).append("\n"); //  -0.1 лежит в 2729
+                }
+                for(int i = 2731; i < data.length; i++){
+                    if(data[i] > 0)
+                        for(int j = 0; j < data[i]; j++)
+                            sb.append((i - 2730) / 10).append(".").append((i - 2731) % 10).append("\n");
+                }
+                writer.write(sb.toString());
+                writer.flush();
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+    //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
+
+
+//        List<Float> data = new ArrayList<>();
+//        try(BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));){
+//            String str = "";
+//            while ((str = br.readLine()) != null){
+//                data.add(Float.parseFloat(str));
+//            }
+//        } catch (IOException e){
+//            System.out.println(e.getMessage());
+//        }
+//        Collections.sort(data);
+//        try (FileWriter writer = new FileWriter(outputName, StandardCharsets.UTF_8)) {
+//            StringBuilder sb = new StringBuilder();
+//            for(Float t : data)
+//                sb.append(t).append("\n");
+//            writer.write(sb.toString());
+//            writer.flush();
+//        } catch (IOException e) {
+//            System.out.println(e.getMessage());
+//        }
 
     /**
      * Сортировка последовательности
@@ -150,6 +337,18 @@ public class JavaTasks {
      * Результат: second = [1 3 4 9 9 13 15 20 23 28]
      */
     static <T extends Comparable<T>> void mergeArrays(T[] first, T[] second) {
-        throw new NotImplementedError();
+        int i = 0;
+        int j = first.length;
+        for(int k = 0; k < second.length; k++){
+            if((j >= second.length) || ( i < first.length && first[i].compareTo(second[j]) < 0  )){
+                second[k] = first[i];
+                i++;
+            } else {
+                second[k] = second[j];
+                j++;
+            }
+        }
     }
 }
+
+//////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
