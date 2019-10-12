@@ -3,7 +3,12 @@ package lesson2;
 import kotlin.NotImplementedError;
 import kotlin.Pair;
 
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class JavaAlgorithms {
@@ -31,9 +36,7 @@ public class JavaAlgorithms {
      *
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) {
-        throw new NotImplementedError();
-    }
+    static public Pair<Integer, Integer> optimizeBuyAndSell(String inputName) {throw new NotImplementedError();  }
 
     /**
      * Задача Иосифа Флафия.
@@ -100,8 +103,28 @@ public class JavaAlgorithms {
      * вернуть ту из них, которая встречается раньше в строке first.
      */
     static public String longestCommonSubstring(String firs, String second) {
-        throw new NotImplementedError();
+        int index = 0;
+        int maxLength = 0;
+        int currMaxLength = 0;
+        int first = 0;
+        String res = "";
+        while (firs.length() - index > maxLength) {
+            while (currMaxLength < second.length() && second.contains(firs.substring(index, index + currMaxLength + 1))){
+                currMaxLength++;
+                if (currMaxLength > maxLength){
+                    maxLength = currMaxLength;
+                    first = index;
+                }
+            }
+            currMaxLength = 0;
+            index++;
+        }
+        return  (maxLength == 0) ? "" : firs.substring(first, first + maxLength);
     }
+    //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
+    // ~O(n^3)
+
+    // ресурсы затрачиваются T(1) - нужны всегда только 5 переменных
 
     /**
      * Число простых чисел в интервале
@@ -116,6 +139,7 @@ public class JavaAlgorithms {
     static public int calcPrimesNumber(int limit) {
         throw new NotImplementedError();
     }
+//////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
 
     /**
      * Балда
@@ -143,7 +167,75 @@ public class JavaAlgorithms {
      * В файле буквы разделены пробелами, строки -- переносами строк.
      * Остальные символы ни в файле, ни в словах не допускаются.
      */
+
     static public Set<String> baldaSearcher(String inputName, Set<String> words) {
-        throw new NotImplementedError();
+        Set<String> res = new HashSet<String>();
+        try (BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));) {
+            String str = "";
+            List<ArrayList<Character>> inputData = new ArrayList<>();
+            while((str = br.readLine()) != null){
+                if(!str.matches("([A-ZА-Я] ?)+"))
+                    throw new IllegalArgumentException();
+                inputData.add(new ArrayList<Character>(
+                                str.trim().chars()
+                                        .mapToObj(e -> (char) e)
+                                        .collect(Collectors.toList())
+                        )
+                );
+            }
+            for(String word : words){
+                tooManyForOperators: {
+                    for (int i = 0; i < inputData.size(); i++) {
+                        for (int j = 0; j < inputData.get(0).size(); j++) {
+                            if (word.charAt(0) == inputData.get(i).get(j)
+                                    && isInData(inputData,
+                                    word.substring(1),
+                                    i, j,
+                                    new Boolean[inputData.size()][inputData.get(i).size()])) {
+                                res.add(word);
+                                break tooManyForOperators;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+
+    private static boolean isInData (
+            List<ArrayList<Character>> inputData,
+            String word,
+            int i, int j,
+            Boolean[][] forbidden){
+
+        if(word.length() == 0)
+            return true;
+
+        forbidden[i][j] = true;
+        if(i != 0 && !forbidden[i - 1][j]){
+            if(inputData.get(i - 1).get(j) == word.charAt(1)) {
+                return isInData(inputData, word.substring(1), i - 1, j, forbidden);
+            }
+        }
+        if(i + 1 < inputData.size() && !forbidden[i + 1][j]){
+            if(inputData.get(i + 1).get(j) == word.charAt(1)) {
+                return isInData(inputData, word.substring(1), i + 1, j, forbidden);
+            }
+        }
+        if(j != 0 && !forbidden[i][j - 1]){
+            if(inputData.get(i).get(j - 1) == word.charAt(1)) {
+                return isInData(inputData, word.substring(1), i, j - 1, forbidden);
+            }
+        }
+        if(j + 1 < inputData.get(i).size() && !forbidden[i][j + 1]){
+            if(inputData.get(i).get(j + 1) == word.charAt(1)) {
+                return isInData(inputData, word.substring(1), i, j + 1, forbidden);
+            }
+        }
+        return false;
     }
 }
