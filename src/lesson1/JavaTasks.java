@@ -132,7 +132,7 @@ public class JavaTasks {
     static void sortAddresses(String inputName, String outputName) {
         HashMap<String, ArrayList<Name>> data = new HashMap();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));
+            BufferedReader br = new BufferedReader(new FileReader(inputName));
             String[] temp;
             String str = "";
             while ((str = br.readLine()) != null) {
@@ -149,7 +149,7 @@ public class JavaTasks {
                 }
             }
 
-        } catch (IOException e) {
+        }catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
@@ -159,9 +159,9 @@ public class JavaTasks {
         List<String> dataKeys = new ArrayList<>(data.keySet());
         Collections.sort(dataKeys, compareAddresses);
 
-        try (FileWriter writer = new FileWriter(outputName, StandardCharsets.UTF_8)) {
+        try (FileWriter writer = new FileWriter(outputName)) {
             StringBuilder sb = new StringBuilder();
-            for (String a : dataKeys) {
+            for(String a : dataKeys) {
                 StringBuilder s = new StringBuilder(a + " -");
                 ArrayList<Name> n = data.get(a);
                 Collections.sort(n);
@@ -232,7 +232,7 @@ public class JavaTasks {
      */
     static public void sortTemperatures(String inputName, String outputName) {
         int[] data = new int[2730 + 1 + 5000 + 1];//там ведь есть + 0 и - 0?
-        try (BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));) {
+        try (BufferedReader br = new BufferedReader(new FileReader(inputName));) {
             String str = "";
             while ((str = br.readLine()) != null) {
                 if (!str.matches("-?[0-9]{1,3}\\.[0-9]")) {

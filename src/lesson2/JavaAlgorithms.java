@@ -169,75 +169,74 @@ public class JavaAlgorithms {
      * Остальные символы ни в файле, ни в словах не допускаются.
      */
 
-    static public Set<String> baldaSearcher(String inputName, Set<String> words) {
-        Set<String> res = new HashSet<String>();
-        try (BufferedReader br = new BufferedReader(new FileReader(inputName, StandardCharsets.UTF_8));) {
-            String str = "";
-            List<ArrayList<Character>> inputData = new ArrayList<>();
-            while ((str = br.readLine()) != null) {
-                if (!str.matches("([A-ZА-Я] ?)+"))
-                    throw new IllegalArgumentException();
-                inputData.add(new ArrayList<Character>(
-                                str.trim().chars()
-                                        .mapToObj(e -> (char) e)
-                                        .collect(Collectors.toList())
-                        )
-                );
-            }
-            for (String word : words) {
-                tooManyForOperators:
-                {
-                    for (int i = 0; i < inputData.size(); i++) {
-                        for (int j = 0; j < inputData.get(0).size(); j++) {
-                            if (word.charAt(0) == inputData.get(i).get(j)
-                                    && isInData(inputData,
-                                    word.substring(1),
-                                    i, j,
-                                    new Boolean[inputData.size()][inputData.get(i).size()])) {
-                                res.add(word);
-                                break tooManyForOperators;
+        static Set<String> baldaSearcher(String inputName, Set<String> words) {
+            Set<String> res = new HashSet<>();
+            try (BufferedReader br = new BufferedReader(new FileReader(inputName));) {
+                String str = "";
+                List<ArrayList<Character>> inputData = new ArrayList<>();
+                while ((str = br.readLine()) != null) {
+                    inputData.add(new ArrayList<Character>(
+                                    str.replaceAll(" ", "")
+                                            .chars()
+                                            .mapToObj(e -> (char) e)
+                                            .collect(Collectors.toList())
+                            )
+                    );
+                }
+                for (String word : words) {
+                    tooManyForOperators:
+                    {
+                        for (int i = 0; i < inputData.size(); i++) {
+                            for (int j = 0; j < inputData.get(0).size(); j++) {
+                                if (word.charAt(0) == inputData.get(i).get(j)
+                                        && isInData(inputData,
+                                        word.substring(1),
+                                        i, j,
+                                        new boolean[inputData.size()][inputData.get(i).size()])) {
+                                    res.add(word);
+                                    break tooManyForOperators;
+                                }
                             }
                         }
                     }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            return res;
         }
-        return res;
-    }
 
+        private static boolean isInData(
+                List<ArrayList<Character>> inputData,
+                String word,
+        int i, int j,
+        boolean[][] forbidden) {
+            boolean res = false;
+            if (word.length() == 0)
+                return true;
 
-    private static boolean isInData(
-            List<ArrayList<Character>> inputData,
-            String word,
-            int i, int j,
-            Boolean[][] forbidden) {
+            forbidden[i][j] = true;
 
-        if (word.length() == 0)
-            return true;
-
-        forbidden[i][j] = true;
-        if (i != 0 && !forbidden[i - 1][j]) {
-            if (inputData.get(i - 1).get(j) == word.charAt(1)) {
-                return isInData(inputData, word.substring(1), i - 1, j, forbidden);
+            if (i != 0 && !forbidden[i - 1][j] ) {
+                if (inputData.get(i - 1).get(j) == word.charAt(0)) {
+                    res = isInData(inputData, word.substring(1), i - 1, j, forbidden);
+                }
             }
-        }
-        if (i + 1 < inputData.size() && !forbidden[i + 1][j]) {
-            if (inputData.get(i + 1).get(j) == word.charAt(1)) {
-                return isInData(inputData, word.substring(1), i + 1, j, forbidden);
+            if (i + 1 < inputData.size() && !forbidden[i + 1][j] && !res) {
+                if (inputData.get(i + 1).get(j) == word.charAt(0)) {
+                    res = isInData(inputData, word.substring(1), i + 1, j, forbidden);
+                }
             }
-        }
-        if (j != 0 && !forbidden[i][j - 1]) {
-            if (inputData.get(i).get(j - 1) == word.charAt(1)) {
-                return isInData(inputData, word.substring(1), i, j - 1, forbidden);
+            if (j != 0 && !forbidden[i][j - 1]  && !res) {
+                if (inputData.get(i).get(j - 1) == word.charAt(0)) {
+                    res = isInData(inputData, word.substring(1), i, j - 1, forbidden);
+                }
             }
-        }
-        if (j + 1 < inputData.get(i).size() && !forbidden[i][j + 1]) {
-            if (inputData.get(i).get(j + 1) == word.charAt(1)) {
-                return isInData(inputData, word.substring(1), i, j + 1, forbidden);
+            if (j + 1 < inputData.get(i).size() && !forbidden[i][j + 1]  && !res) {
+                if (inputData.get(i).get(j + 1) == word.charAt(0)) {
+                    res = isInData(inputData, word.substring(1), i, j + 1, forbidden);
+                }
             }
+            return res;
         }
-        return false;
-    }
 }
