@@ -2,11 +2,9 @@ package lesson2;
 
 import kotlin.NotImplementedError;
 import kotlin.Pair;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -104,29 +102,29 @@ public class JavaAlgorithms {
      * Если имеется несколько самых длинных общих подстрок одной длины,
      * вернуть ту из них, которая встречается раньше в строке first.
      */
-    static public String longestCommonSubstring(String firs, String second) {
-        int index = 0;
-        int maxLength = 0;
-        int currMaxLength = 0;
-        int first = 0;
-        String res = "";
-        while (firs.length() - index > maxLength) {
-            while (currMaxLength < second.length() &&
-                    firs.length() > index + currMaxLength &&
-                    second.contains(firs.substring(index, index + currMaxLength + 1))){
-                currMaxLength++;
-                if (currMaxLength > maxLength){
-                    maxLength = currMaxLength;
-                    first = index;
+    static public String longestCommonSubstring(String first, String second) {
+        int indexOfMax = 0;
+        int maxValue = 0;
+        int[][] matches = new int[first.length() + 1][second.length() + 1];
+        for(int i = 1; i <= first.length(); i++){
+            for(int j = 1; j <= second.length(); j++){
+                if(first.charAt(i - 1) == second.charAt(j - 1)){
+                    matches[i][j] = matches[i - 1][j - 1] + 1;
+                    if (matches[i][j] > maxValue){
+                        maxValue = matches[i][j];
+                        indexOfMax = i;
+                    }
                 }
             }
-            currMaxLength = 0;
-            index++;
         }
-        return  (maxLength == 0) ? "" : firs.substring(first, first + maxLength);
+        return maxValue == 0 ?  "" : first.substring(indexOfMax - maxValue , indexOfMax);
     }
+    // 12345678 и 45000   indexOfMax = 5, maxValue = 2 , substr(3, 5)
+    //
+
     //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
-    // ресурсы затрачиваются T(1) - нужны всегда только 5 переменных
+    // ресурсы затрачиваются T(m*n), n = first.length , m = second.length
+    //решение за O(m * n)
 
     /**
      * Число простых чисел в интервале
@@ -183,7 +181,7 @@ public class JavaAlgorithms {
                             )
                     );
                 }
-                for (String word : words) {
+                for (String word : words) {         //O(i * j * word.length)
                     tooManyForOperators:
                     {
                         for (int i = 0; i < inputData.size(); i++) {
@@ -202,11 +200,12 @@ public class JavaAlgorithms {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                throw new IllegalArgumentException(e);
             }
             return res;
         }
 
-        private static boolean isInData(
+        private static boolean isInData(// 3^n, так как после каждого перехода по рекурсии есть 3 варианта куда ходить
                 List<ArrayList<Character>> inputData,
                 String word,
         int i, int j,
@@ -240,3 +239,6 @@ public class JavaAlgorithms {
             return res;
         }
 }
+//////////////////////////////////////ОЦЕНКА ЗАТРАТ/////////////////////////////////////////////////////////////////////
+// O(i * j * 3^(word.length) * n), i и j - количество строк и столбцов в матрице букв, n - количество слов в заданном наборе
+// T(i * j)

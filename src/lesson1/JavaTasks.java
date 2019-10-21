@@ -6,7 +6,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @SuppressWarnings("unused")
@@ -41,8 +40,8 @@ public class JavaTasks {
      * <p>
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
-    private static String intTimeToString(int intTime) {
-        String res = "";
+    private static String intTimeToString(int intTime) { //O(1)
+        String res;
         Formatter f = new Formatter();
         if (intTime < 3600) {
             res = f.format("%02d:%02d:%02d ", 12, (intTime / 60), (intTime % 60)).toString();
@@ -52,39 +51,36 @@ public class JavaTasks {
         return res;
     }
 
-    static void sortTimes(String inputName, String outputName) {
+    static void sortTimes(String inputName, String outputName) throws IOException {
         List<Integer> listAM = new ArrayList<>();
         List<Integer> listPM = new ArrayList<>();
         int[] curr = new int[3];
 
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(inputName));
-            String str = "";
-            while ((str = br.readLine()) != null) {
-                if (str.matches("(\\d\\d):(\\d\\d):(\\d\\d) (AM|PM)")) {
-                    String[] temp = str.split(" ");
-                    for (int i = 0; i < 3; i++)
-                        curr[i] = Integer.parseInt(temp[0].split(":")[i]);
-                    if ((curr[0] > 12 || curr[0] < 0) || (curr[1] > 59 || curr[1] < 0) || (curr[2] > 59 || curr[2] < 0))
-                        throw new IllegalArgumentException();
-                    int e = curr[0] % 12 * 60 * 60 + curr[1] * 60 + curr[2];
-                    if (temp[1].equals("AM")) {
-                        listAM.add(e); //т.е. переводим в секунды
-                    } else {                                   //%12 потому что часы начинаются с 12 как с нуля
-                        listPM.add(e);
-                    }
-                } else {
+        try (BufferedReader br = new BufferedReader(new FileReader(inputName))){
+            String str;
+            while ((str = br.readLine()) != null) {                   //весь цикл while O(N), N - количество строк
+                if (!str.matches("(\\d\\d):(\\d\\d):(\\d\\d) (AM|PM)"))
                     throw new IllegalArgumentException();
+                String[] temp = str.split(" ");
+                for (int i = 0; i < 3; i++)
+                    curr[i] = Integer.parseInt(temp[0].split(":")[i]);
+                if ((curr[0] > 12 || curr[0] < 0) || (curr[1] > 59 || curr[1] < 0) || (curr[2] > 59 || curr[2] < 0))
+                    throw new IllegalArgumentException();
+                int e = curr[0] % 12 * 60 * 60 + curr[1] * 60 + curr[2];
+                if (temp[1].equals("AM")) {
+                    listAM.add(e);                           //т.е. переводим в секунды
+                } else {                                   //%12 потому что часы начинаются с 12 как с нуля
+                    listPM.add(e);
                 }
             }
-            br.close();
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            throw  new IllegalArgumentException(e);
         }
         Comparator<Integer> compare = Integer::compareTo;
 
-        listAM.sort(compare);
-        listPM.sort(compare);
+        listAM.sort(compare); //O(N*log(N))
+        listPM.sort(compare);   //O(N*log(N))
 
         try (FileWriter writer = new FileWriter(outputName)) {
             StringBuilder sb = new StringBuilder();
@@ -98,10 +94,12 @@ public class JavaTasks {
             writer.flush();
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            throw new IllegalArgumentException(e);
         }
     }
 
     //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
+    // Time complexity O(N*log(N)) mem complexity: T(N) - 2 ArrayLists of total capacity N
 
     /**
      * Сортировка адресов
@@ -130,12 +128,12 @@ public class JavaTasks {
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
     static void sortAddresses(String inputName, String outputName) {
-        HashMap<String, ArrayList<Name>> data = new HashMap();
+        HashMap<String, List<Name>> data = new HashMap<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(inputName));
             String[] temp;
-            String str = "";
-            while ((str = br.readLine()) != null) {
+            String str;
+            while ((str = br.readLine()) != null) {                               //O(log(N) * N), N - количество строк
                 if (!str.toLowerCase().matches("\\S+ \\S+ - \\S+ \\d+"))
                     throw new IllegalArgumentException();
                 temp = str.split(" ");
@@ -143,29 +141,30 @@ public class JavaTasks {
                 Name person = new Name(temp[1], temp[0]);
 
                 if (!data.containsKey(address)) {
-                    data.put(address, new ArrayList<>(Collections.singletonList(person)));
+                    data.put(address, new ArrayList<>(Collections.singletonList(person)));                 //O(1)
                 } else {
-                    data.get(address).add(person);
+                    data.get(address).add(person);                                         //O(log(N)) since java8
                 }
             }
 
         }catch (IOException e) {
             System.out.println(e.getMessage());
+            throw new IllegalArgumentException(e);
         }
 
         Comparator<String> compareAddresses = Comparator.comparing(str -> str.split(" ")[0]);
         compareAddresses = compareAddresses.thenComparing(str -> Integer.parseInt(str.split(" ")[1]));
 
         List<String> dataKeys = new ArrayList<>(data.keySet());
-        Collections.sort(dataKeys, compareAddresses);
+        dataKeys.sort(compareAddresses);                                                          // O(a*log(a))
 
         try (FileWriter writer = new FileWriter(outputName)) {
             StringBuilder sb = new StringBuilder();
-            for(String a : dataKeys) {
+            for(String a : dataKeys) {                                 //O(a * n * log(n)),
                 StringBuilder s = new StringBuilder(a + " -");
-                ArrayList<Name> n = data.get(a);
-                Collections.sort(n);
-                for (Name name : n)
+                ArrayList<Name> n = new ArrayList<>(data.get(a));
+                Collections.sort(n);              //O(n*log(n))
+                for (Name name : n)              //O(n)
                     s.append(" ").append(name.last).append(" ").append(name.first).append(",");
                 s.deleteCharAt(s.length() - 1);
                 sb.append(s).append("\n");
@@ -174,6 +173,7 @@ public class JavaTasks {
             writer.flush();
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -199,6 +199,8 @@ public class JavaTasks {
     }
 
     //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
+// O(a * n * log(n)), a - количество адресов, n - среднее сокисчество жильцов по адресу. ресурсоемкость T(N*n)
+
 
     /**
      * Сортировка температур
@@ -231,32 +233,39 @@ public class JavaTasks {
      * 121.3
      */
     static public void sortTemperatures(String inputName, String outputName) {
-        int[] data = new int[2730 + 1 + 5000 + 1];//там ведь есть + 0 и - 0?
+        int[] data = new int[2730 + 1 + 5000 + 1];
+        /*
+        мой алгоритм замечает, написали ли перед 0.0 минус или нет. отсюда и вопрос.
+         потому что если задать -0.0  без выделения на него места возникнет ошибка индексирования,
+         ну или в другой реализации нельзя было бы вывести заданное число раз -0.0 , так как все нули соберутся
+         в одном элементе массива без опознавательных знаков
+          так же у синоптиков существует понятие +-0, вроде бы возникающее из-за округлений
+         */
         try (BufferedReader br = new BufferedReader(new FileReader(inputName));) {
             String str = "";
-            while ((str = br.readLine()) != null) {
-                if (!str.matches("-?[0-9]{1,3}\\.[0-9]")) {
-                    throw new IllegalArgumentException();
+            while ((str = br.readLine()) != null){
+                if(!str.matches("-?[0-9]{1,3}\\.[0-9]")){
+                    throw  new IllegalArgumentException();
                 }
-                int curr = (int) (Float.parseFloat(str) * 10);
-                if (str.charAt(0) == '-') {
+                int curr = (int)(Float.parseFloat(str) * 10);
+                if(str.charAt(0) == '-'){
                     data[Math.abs(curr + 2730)]++;                // -273.0 лежит в индексе 0, -0.0 в 2730
-                } else {
+                } else{
                     data[curr + 2731]++;
                 }
             }
             try (FileWriter writer = new FileWriter(outputName)) {
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i <= 2730; i++) {
-                    if (data[i] > 0)
-                        for (int j = 0; j < data[i]; j++)
+                for(int i = 0; i <= 2730; i++){
+                    if(data[i] > 0)
+                        for(int j = 0; j < data[i]; j++)
                             sb.append("-").append(Math.abs((i - 2730) / 10)).append(".").
                                     append((Math.abs(i - 2730)) % 10).append("\n"); //  -0.1 лежит в 2729
                 }
-                for (int i = 2731; i < data.length; i++) {
-                    if (data[i] > 0)
-                        for (int j = 0; j < data[i]; j++)
-                            sb.append((i - 2730) / 10).append(".").append((i - 2731) % 10).append("\n");
+                for(int i = 2731; i < data.length; i++){
+                    if(data[i] > 0)
+                        for(int j = 0; j < data[i]; j++)
+                            sb.append((i - 2731) / 10).append(".").append((i - 2731) % 10).append("\n");
                 }
                 writer.write(sb.toString());
                 writer.flush();
@@ -265,10 +274,11 @@ public class JavaTasks {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            throw new IllegalArgumentException(e);
         }
     }
     //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
-
+    //времязатраты O(N),N - колво входных значений, ресурсоемкость T(1)
 
     /**
      * Сортировка последовательности
@@ -333,3 +343,4 @@ public class JavaTasks {
 }
 
 //////////////////////////////////////ОЦЕНКА ЗАТРАТ///////////////////////////////////////////////////////////
+//O(n), n = second.length для времени.  ресурсозатраты T(1)
