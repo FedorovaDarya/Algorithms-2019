@@ -2,9 +2,9 @@ package lesson2;
 
 import kotlin.NotImplementedError;
 import kotlin.Pair;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -169,7 +169,7 @@ public class JavaAlgorithms {
 
         static Set<String> baldaSearcher(String inputName, Set<String> words) {
             Set<String> res = new HashSet<>();
-            try (BufferedReader br = new BufferedReader(new FileReader(inputName));) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(inputName), StandardCharsets.UTF_8))) {
                 String str = "";
                 List<ArrayList<Character>> inputData = new ArrayList<>();
                 while ((str = br.readLine()) != null) {
