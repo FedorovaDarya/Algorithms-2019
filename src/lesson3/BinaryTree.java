@@ -150,57 +150,6 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         return true;
     }
 
-//    private Node<T> removeHelper(Node<T> r,Node<T> prev, T s){
-//        System.out.println(r.value);
-//
-//
-//        if(r.value.compareTo(s) > 0)
-//            r.left = removeHelper(r.left,r, s);
-//
-//        else if(r.value.compareTo(s) < 0)
-//            r.right = removeHelper(r.right,r, s);
-//
-//        //нашли нужный нод
-//        else{
-//            Node<T> newNode;
-//            if(r.right != null && r.left != null){
-//                System.out.println("Here, 2 childs,  at value " + r.value + " deleting the " + s);
-//                Node<T> min = findMin(r.right);
-//                newNode = new Node<>(min.value);
-//                Node<T> newLeft = r.left;
-//                Node<T> newRight = (min.value == r.right.value)? r.right.right : r.right;
-//                r = newNode;
-//                newNode.left = newLeft;
-//                newNode.right = newRight;
-//                if(s == root.value) {
-//                    root = newNode;
-//
-//                }
-//                if(newNode.right != null)
-//                    removeHelper(r.right,r,min.value);
-//            }
-//            else if(r.right != null) {
-//                r = r.right;
-//                if(root.value == s)
-//                    root = r.right;
-//            }
-//            else if(r.left != null) {
-//                r = r.left;
-//                if(s == root.value)
-//                    root = r.left;
-//            }
-//            else
-//                r = null;
-//        }
-//        return r;
-//    }
-//
-//    private Node<T> findMin(Node<T> r){
-//        if(r.left == null)
-//            return r;
-//        else
-//            return findMin(r.left);
-//    }
 
     @Override
     public boolean contains(Object o) {
