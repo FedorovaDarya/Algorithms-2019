@@ -128,7 +128,7 @@ public class JavaTasks {
      * В случае обнаружения неверного формата файла бросить любое исключение.
      */
     static void sortAddresses(String inputName, String outputName) {
-        HashMap<String, List<Name>> data = new HashMap<>();
+        Map<String, List<Name>> data = new HashMap<>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(inputName));
             String[] temp;
@@ -143,7 +143,7 @@ public class JavaTasks {
                 if (!data.containsKey(address)) {
                     data.put(address, new ArrayList<>(Collections.singletonList(person)));                 //O(1)
                 } else {
-                    data.get(address).add(person);                                         //O(log(N)) since java8
+                    data.get(address).add(person);          //О(1) + О(1) = O(1)
                 }
             }
 
@@ -233,14 +233,8 @@ public class JavaTasks {
      * 121.3
      */
     static public void sortTemperatures(String inputName, String outputName) {
-        int[] data = new int[2730 + 1 + 5000 + 1];
-        /*
-        мой алгоритм замечает, написали ли перед 0.0 минус или нет. отсюда и вопрос.
-         потому что если задать -0.0  без выделения на него места возникнет ошибка индексирования,
-         ну или в другой реализации нельзя было бы вывести заданное число раз -0.0 , так как все нули соберутся
-         в одном элементе массива без опознавательных знаков
-          так же у синоптиков существует понятие +-0, вроде бы возникающее из-за округлений
-         */
+        int[] data = new int[2730 + 5000 + 1];
+
         try (BufferedReader br = new BufferedReader(new FileReader(inputName));) {
             String str = "";
             while ((str = br.readLine()) != null){
@@ -249,23 +243,23 @@ public class JavaTasks {
                 }
                 int curr = (int)(Float.parseFloat(str) * 10);
                 if(str.charAt(0) == '-'){
-                    data[Math.abs(curr + 2730)]++;                // -273.0 лежит в индексе 0, -0.0 в 2730
+                    data[Math.abs(curr + 2730)]++;                // -273.0 лежит в индексе 0, (+-)0.0 в 2730
                 } else{
-                    data[curr + 2731]++;
+                    data[curr + 2730]++;
                 }
             }
             try (FileWriter writer = new FileWriter(outputName)) {
                 StringBuilder sb = new StringBuilder();
-                for(int i = 0; i <= 2730; i++){
+                for(int i = 0; i < 2730; i++){
                     if(data[i] > 0)
                         for(int j = 0; j < data[i]; j++)
                             sb.append("-").append(Math.abs((i - 2730) / 10)).append(".").
                                     append((Math.abs(i - 2730)) % 10).append("\n"); //  -0.1 лежит в 2729
                 }
-                for(int i = 2731; i < data.length; i++){
+                for(int i = 2730; i < data.length; i++){
                     if(data[i] > 0)
                         for(int j = 0; j < data[i]; j++)
-                            sb.append((i - 2731) / 10).append(".").append((i - 2731) % 10).append("\n");
+                            sb.append((i - 2730) / 10).append(".").append((i - 2730) % 10).append("\n");
                 }
                 writer.write(sb.toString());
                 writer.flush();
