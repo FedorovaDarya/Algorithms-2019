@@ -4,11 +4,13 @@ import kotlin.NotImplementedError;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.security.auth.login.CredentialException;
 import java.util.*;
+
 
 // Attention: comparable supported but comparator is not
 public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implements CheckableSortedSet<T> {
+    //для особого случая при удалении нода
+    Node<T> lastRepl = null;
 
     private static class Node<T> {
         final T value;
@@ -73,8 +75,18 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
      * Удаление элемента в дереве
      * Средняя
      */
+    List<Node<T>> nodes = new ArrayList<>();
+    int position = 0 ;
+    Node<T> last = null;
+    private void init(Node<T> root){
+        if(root != null){
+            init(root.left);
+            nodes.add(root);
+            init(root.right);
+        }
+    }
 
-    ////////////время О(n)  ресурсы О(1)///////////////
+    ////////////время О(n)  ресурсы О(1)/////////////// n - количество узлов графа(здесь и далее)
     @SuppressWarnings("unchecked")
     @Override
     public boolean remove(Object o) {
@@ -106,11 +118,15 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
                 if (parentCurr.right != null && parentCurr.right.value == curr.value)
                     parentCurr.right = curr.left;
             }
-        } else if (curr.left == null){                            // 1 потомок у удаляемого
-                if (parentCurr.left != null && parentCurr.left.value == curr.value)
-                    parentCurr.left = curr.right;
-                if (parentCurr.right != null && parentCurr.right.value == curr.value)
-                    parentCurr.right = curr.right;
+        } else if (curr.left == null){                                  // 1 потомок у удаляемого
+            if(curr == root)
+                root = root.right;
+            else{
+            if (parentCurr.left != null && parentCurr.left.value == curr.value)
+                parentCurr.left = curr.right;
+            if (parentCurr.right != null && parentCurr.right.value == curr.value)
+                parentCurr.right = curr.right;
+            }
         } else {                                                 //2 потомка у удаляемого
             Node<T> replace = curr.right;
             Node<T> parentReplace = curr;
@@ -145,10 +161,12 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
                     parentCurr.right = replace;
                 replace.left = curr.left;
             }
+            lastRepl = replace;
         }
         size--;
         return true;
     }
+
 
 
     @Override
@@ -180,56 +198,69 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
     }
 
     public class BinaryTreeIterator implements Iterator<T> {
-        Node<T> last;
-    List<Node<T>> nodes;
-    int position ;
+        private Stack<Node<T>> stack = new Stack<>();
         private BinaryTreeIterator() {
-           nodes = new LinkedList<>();
-           init(root);
-           position = 0;
-           last = null;
-        }
-
-        private void init(Node<T> root){
-            if(root != null){
-                init(root.left);
-                nodes.add(root);
-                init(root.right);
+            if (root == null) {
+                return;
             }
+            for(Node<T> node = root; node != null; node = node.left)
+                stack.push(node);
         }
 
         /**
          * Проверка наличия следующего элемента
          * Средняя
          */
-        ///////временная сложность O(1)  ресурсоемкость О(n)///////////
+        ///////временная сложность O(1)  ресурсоемкость О(1)///////////
         @Override
         public boolean hasNext() {
-            return position < nodes.size();
+            return !stack.isEmpty();
         }
 
         /**
          * Поиск следующего элемента
          * Средняя
          */
-        /////////время О(n) ресурсы О(n)//////////
+        /////////время О(n) ресурсы О(h)////////// h - высота дерева (тут и далее)
         @Override
         public T next() {
             if(!hasNext()) throw new NoSuchElementException();
-            last = nodes.get(position);
-            position++;
-            return last.value;
+            Node<T> res = stack.pop();
+            Node<T> node = res;
+            Node<T> n = res.right;
+
+            if(res == lastRepl){
+                if(n != null){
+                    if(!stack.contains(n))
+                        stack.push(n);
+                    while(n.left != null) {
+                        if(!stack.contains(n.left)) {
+                            stack.push(n.left);
+                        }
+                        n = n.left;
+                    }
+                }
+            } else  if(node.right != null){
+
+                node = node.right;
+                while (node!=null){
+                    stack.push(node);
+                    node = node.left;
+                }
+            }
+            last = res;
+            return res.value;
         }
 
         /**
          * Удаление следующего элемента
          * Сложная
          */
-        /////время О(n)   ресурсы О(n)///////
+        /////время О(n)   ресурсы О(h)///////
         @Override
         public void remove() {
-            BinaryTree.this.remove(nodes.get(--position).value);  //O(n)
-            nodes.remove(position); //O(n)
+            if(last == null) throw new NoSuchElementException();
+            BinaryTree.this.remove(last.value);                   //время О(n)
         }
     }
 

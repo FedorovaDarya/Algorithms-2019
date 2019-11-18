@@ -1,11 +1,10 @@
 package lesson3
 
+import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Tag
-import kotlin.test.Test
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.NoSuchElementException
+import kotlin.test.*
 
 class BinaryTreeTest {
     private fun testAdd(create: () -> CheckableSortedSet<Int>) {
@@ -84,6 +83,35 @@ class BinaryTreeTest {
         }
     }
 
+    private fun myTestRemoveJava(create: () -> CheckableSortedSet<String>) {
+        val set = setOf("yty", "iggy", "saturday", "field", "limb", "Fame")  //size = 6
+        val binarySet = create()
+
+        assertFalse(binarySet.remove("sunday")) //удаляем из пустого
+
+        val temp = "111"
+        binarySet.add(temp)
+        assertTrue(binarySet.remove(temp))
+        assertEquals(0, binarySet.size)
+
+        for (elem in set)
+            binarySet += elem
+
+        val toRemove = "iggy"
+        val oldSize = binarySet.size
+        assertTrue(binarySet.remove(toRemove))
+        assertFalse(binarySet.remove(toRemove))   //элеент точно удалился!
+        assertEquals(oldSize - 1, binarySet.size)
+
+        for (elem in set)
+            binarySet.remove(elem)
+
+        binarySet.remove("FOREIGN ELEM") //
+        binarySet.remove("FOREIGN ELEM") //а вдруг при каждом вызове size--?
+        binarySet.remove("FOREIGN ELEM") //
+        assertEquals(0, binarySet.size)
+    }
+
     @Test
     @Tag("Normal")
     fun testRemoveKotlin() {
@@ -94,7 +122,9 @@ class BinaryTreeTest {
     @Tag("Normal")
     fun testRemoveJava() {
         testRemove { createJavaTree() }
+        myTestRemoveJava { createJavaTree() }
     }
+
 
     private fun testIterator(create: () -> CheckableSortedSet<Int>) {
         val random = Random()
@@ -129,6 +159,29 @@ class BinaryTreeTest {
         }
     }
 
+    private fun myTestIterator(create: () -> CheckableSortedSet<Int>) {
+        val binarySet = create()
+        val list = mutableListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        list.shuffle();
+        val iterator = binarySet.iterator()
+        assertFalse(iterator.hasNext())
+        for (i in list)
+            binarySet += i
+        val SIZE = list.size
+        while (iterator.hasNext())
+            assertNotNull(iterator.next())
+        assertFailsWith<NoSuchElementException> {
+            iterator.next();
+        }
+
+        val iterator2 = binarySet.iterator()
+        assertEquals(iterator2.next(), 1)
+        assertEquals(iterator2.next(), 2)
+        assertEquals(iterator2.next(), 3)
+
+        assertEquals(binarySet.size, SIZE)
+    }
+
     @Test
     @Tag("Normal")
     fun testIteratorKotlin() {
@@ -139,6 +192,7 @@ class BinaryTreeTest {
     @Tag("Normal")
     fun testIteratorJava() {
         testIterator { createJavaTree() }
+        myTestIterator { createJavaTree() }
     }
 
     private fun testIteratorRemove(create: () -> CheckableSortedSet<Int>) {
@@ -148,6 +202,7 @@ class BinaryTreeTest {
             for (i in 1..20) {
                 list.add(random.nextInt(100))
             }
+            println("list")
             val treeSet = TreeSet<Int>()
             val binarySet = create()
             for (element in list) {
@@ -192,9 +247,30 @@ class BinaryTreeTest {
         testIteratorRemove { createKotlinTree() }
     }
 
+    private fun myTestIteratorRemove(create: () -> CheckableSortedSet<Int>) {
+        val binarySet = create()
+        val list = mutableListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        list.shuffle()
+        val iterator0 = binarySet.iterator()
+        assertFailsWith<NoSuchElementException> {
+            iterator0.remove();
+        }
+        for (element in list) {
+            binarySet += element
+        }
+        val iterator = binarySet.iterator()
+        assertEquals(binarySet.size, list.size)
+        iterator.next()
+        iterator.remove()
+        assertEquals(2, iterator.next())
+
+        assertEquals(list.size - 1, binarySet.size)
+    }
+
     @Test
     @Tag("Hard")
     fun testIteratorRemoveJava() {
         testIteratorRemove { createJavaTree() }
+        myTestIteratorRemove { createJavaTree() }
     }
 }
