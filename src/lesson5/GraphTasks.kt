@@ -2,6 +2,8 @@
 
 package lesson5
 
+import java.util.*
+
 /**
  * Эйлеров цикл.
  * Средняя
@@ -28,8 +30,43 @@ package lesson5
  * Справка: Эйлеров цикл -- это цикл, проходящий через все рёбра
  * связного графа ровно по одному разу
  */
+
+////////////////////////////////////////////////////
+///время О(vertices.size + edges.size) = O(V + E)
+// ресурсы O(Vertices(queue) + list(verticies) + result(Edges) = O(V + E))
+////////////////////////////////////////////////////
 fun Graph.findEulerLoop(): List<Graph.Edge> {
-    TODO()
+    if (this.vertices.isEmpty()
+        || this.edges.isEmpty()
+    )
+        return emptyList()
+    for (v in vertices)
+        if (getNeighbors(v).size % 2 != 0)
+            return emptyList()
+
+    val listOfAnswer = mutableListOf<Graph.Edge>()
+    val edges = mutableSetOf<Graph.Edge>()
+    val theEulerLoop = ArrayDeque<Graph.Vertex>()
+    val verticesStack = Stack<Graph.Vertex>()
+    verticesStack.add(this.vertices.first())
+    edges.addAll(this.edges)
+
+    while (verticesStack.isNotEmpty()) {
+        val temp = verticesStack.last()
+        for (v in this.vertices)
+            if (edges.contains(getConnection(temp, v))) {
+                verticesStack.push(v)
+                edges.remove(getConnection(temp, v))
+                break
+            }
+        if (temp == verticesStack.last()) {
+            verticesStack.pop()
+            theEulerLoop.add(temp)
+        }
+    }
+    for (i in 0 until theEulerLoop.size - 1)
+        getConnection(theEulerLoop.poll(), theEulerLoop.first)?.let { listOfAnswer.add(it) }
+    return listOfAnswer
 }
 
 /**
@@ -114,6 +151,40 @@ fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
  *
  * Ответ: A, E, J, K, D, C, H, G, B, F, I
  */
+
+////////////////////////////////////////////////////
+///время O(V!) ресурсы O(V)///
+////////////////////////////////////////////////////
 fun Graph.longestSimplePath(): Path {
-    TODO()
+    val path = LinkedList<Graph.Vertex>()
+    val res = LinkedList<Graph.Vertex>()
+    if (vertices.isNotEmpty()) {
+        for (curVertex in vertices) {
+            path.add(curVertex)
+            helpFunc(path, curVertex, res)
+        }
+        var p = Path(res.poll())
+        while (res.isNotEmpty())
+            p = Path(p, this, res.poll())
+        return p
+    }
+    return Path()
+}
+
+private fun Graph.helpFunc(
+    tempVertices: LinkedList<Graph.Vertex>,
+    vertex: Graph.Vertex,
+    result: MutableList<Graph.Vertex>
+) {
+    for (temp in getNeighbors(vertex)) {
+        if (!tempVertices.contains(temp)) {
+            tempVertices.add(temp)
+            helpFunc(tempVertices, temp, result)
+        }
+    }
+    if (tempVertices.size > result.size) {
+        result.clear()
+        result.addAll(tempVertices)
+    }
+    tempVertices.remove(vertex)
 }

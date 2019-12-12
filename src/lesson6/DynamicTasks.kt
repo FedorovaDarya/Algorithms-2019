@@ -2,6 +2,10 @@
 
 package lesson6
 
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.math.max
+
 /**
  * Наибольшая общая подпоследовательность.
  * Средняя
@@ -14,8 +18,39 @@ package lesson6
  * Если есть несколько самых длинных общих подпоследовательностей, вернуть любую из них.
  * При сравнении подстрок, регистр символов *имеет* значение.
  */
+
+
+//////////////////////////////////////////////////////////
+// O(first.length*second.length) по времени и по памяти //
+//////////////////////////////////////////////////////////
 fun longestCommonSubSequence(first: String, second: String): String {
-    TODO()
+    var res = ""
+    val matrix = fillMatrix(first, second)
+    var i = first.length - 1
+    var j = second.length - 1
+    while (i >= 0 && j >= 0) {
+        when {
+            first[i] == second[j] -> {
+                res += first[i--]
+                j--
+            }
+            matrix[i][j + 1] > matrix[i + 1][j] -> i--
+            else -> j--
+        }
+    }
+    return res.reversed()
+}
+
+private fun fillMatrix(first: String, second: String): Array<Array<Int>> {
+    val m = Array(first.length + 1) { Array(second.length + 1) { 0 } }
+    for (i in 0 until first.length - 1)
+        for (j in 0 until second.length - 1) {
+            if (first[i] == second[j])
+                m[i + 1][j + 1] = m[i][j] + 1
+            else
+                m[i + 1][j + 1] = max(m[i + 1][j], m[i][j + 1])
+        }
+    return m;
 }
 
 /**
@@ -30,8 +65,34 @@ fun longestCommonSubSequence(first: String, second: String): String {
  * то вернуть ту, в которой числа расположены раньше (приоритет имеют первые числа).
  * В примере ответами являются 2, 8, 9, 12 или 2, 5, 9, 12 -- выбираем первую из них.
  */
+
+//////////////////////////////////////////////////////////
+// O(list.length^2) по времени  и O(list.length) памяти //
+//////////////////////////////////////////////////////////
 fun longestIncreasingSubSequence(list: List<Int>): List<Int> {
-    TODO()
+    val res = ArrayList<Int>()
+    if (list.isNotEmpty()) {
+        val curLengths = ArrayList<Int>()
+        val prevIndexes = ArrayList<Int>()
+        for (i in 0 until list.size) {
+            var cur = 0
+            var prev = -1
+            for (j in 0 until i) {
+                if (list[j] < list[i] && curLengths[j] > cur) {
+                    cur = curLengths[j]
+                    prev = j
+                }
+            }
+            curLengths.add(cur + 1)
+            prevIndexes.add(prev)
+        }
+        var max = curLengths.indexOf(Collections.max(curLengths))
+        while (max != -1) {
+            res.add(list[max])
+            max = prevIndexes[max]
+        }
+    }
+    return res.reversed()
 }
 
 /**
