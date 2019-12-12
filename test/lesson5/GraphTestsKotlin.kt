@@ -8,7 +8,7 @@ class GraphTestsKotlin : AbstractGraphTests() {
     @Test
     @Tag("Normal")
     fun testFindEulerLoop() {
-        findEulerLoop { findEulerLoop() }
+        findEulerLoop { findEulerLoop()}
     }
 
     @Test

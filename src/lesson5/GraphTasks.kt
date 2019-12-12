@@ -152,39 +152,7 @@ fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
  * Ответ: A, E, J, K, D, C, H, G, B, F, I
  */
 
-////////////////////////////////////////////////////
-///время O(V!) ресурсы O(V)///
-////////////////////////////////////////////////////
-fun Graph.longestSimplePath(): Path {
-    val path = LinkedList<Graph.Vertex>()
-    val res = LinkedList<Graph.Vertex>()
-    if (vertices.isNotEmpty()) {
-        for (curVertex in vertices) {
-            path.add(curVertex)
-            helpFunc(path, curVertex, res)
-        }
-        var p = Path(res.poll())
-        while (res.isNotEmpty())
-            p = Path(p, this, res.poll())
-        return p
-    }
-    return Path()
-}
 
-private fun Graph.helpFunc(
-    tempVertices: LinkedList<Graph.Vertex>,
-    vertex: Graph.Vertex,
-    result: MutableList<Graph.Vertex>
-) {
-    for (temp in getNeighbors(vertex)) {
-        if (!tempVertices.contains(temp)) {
-            tempVertices.add(temp)
-            helpFunc(tempVertices, temp, result)
-        }
-    }
-    if (tempVertices.size > result.size) {
-        result.clear()
-        result.addAll(tempVertices)
-    }
-    tempVertices.remove(vertex)
+fun Graph.longestSimplePath(): Path {
+    TODO()
 }

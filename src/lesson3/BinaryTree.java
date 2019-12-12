@@ -105,26 +105,26 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         }
 
         if (curr.right == null && curr.left == null){              //удаляемый это лист
-            if (parentCurr.left != null && parentCurr.left.value == curr.value)
+            if (parentCurr.left != null && parentCurr.left.value.compareTo(curr.value) == 0)
                 parentCurr.left = null;
-            if (parentCurr.right != null && parentCurr.right.value == curr.value)
+            if (parentCurr.right != null && parentCurr.right.value.compareTo(curr.value) ==0)
                 parentCurr.right = null;
         } else if (curr.right == null){                             // 1 потомок у удаляемого
             if(curr == root)
                 root = root.left;
             else{
-                if (parentCurr.left != null && parentCurr.left.value == curr.value)
+                if (parentCurr.left != null && parentCurr.left.value.compareTo(curr.value) == 0)
                     parentCurr.left = curr.left;
-                if (parentCurr.right != null && parentCurr.right.value == curr.value)
+                if (parentCurr.right != null && parentCurr.right.value.compareTo(curr.value) == 0)
                     parentCurr.right = curr.left;
             }
         } else if (curr.left == null){                                  // 1 потомок у удаляемого
             if(curr == root)
                 root = root.right;
             else{
-            if (parentCurr.left != null && parentCurr.left.value == curr.value)
+            if (parentCurr.left != null && parentCurr.left.value.compareTo(curr.value) == 0)
                 parentCurr.left = curr.right;
-            if (parentCurr.right != null && parentCurr.right.value == curr.value)
+            if (parentCurr.right != null && parentCurr.right.value.compareTo(curr.value) == 0)
                 parentCurr.right = curr.right;
             }
         } else {                                                 //2 потомка у удаляемого
@@ -260,7 +260,7 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> implemen
         @Override
         public void remove() {
             if(last == null) throw new NoSuchElementException();
-            BinaryTree.this.remove(last.value);                   //время О(n)
+            BinaryTree.this.remove(last.value);                                   //время О(n)
         }
     }
 
