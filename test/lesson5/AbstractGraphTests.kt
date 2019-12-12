@@ -269,22 +269,6 @@ fun largestIndependentVertexSet(largestIndependentVertexSet: Graph.() -> Set<Gra
 }
 
 fun longestSimplePath(longestSimplePath: Graph.() -> Path) {
-    val oneVertice = GraphBuilder().apply {
-        addVertex("A")
-    }.build()
-    val smallPath = oneVertice.longestSimplePath()
-    assertEquals(0, smallPath.length)
-
-    val noEdges = GraphBuilder().apply {
-        addVertex("A")
-        val b = addVertex("B")
-        val c = addVertex("C")
-        val d = addVertex("D")
-        val e = addVertex("E")
-    }.build()
-    val noEdgesPath = noEdges.longestSimplePath()
-    assertEquals(0, noEdgesPath.length)
-
     val emptyGraph = GraphBuilder().build()
     assertEquals(0, emptyGraph.longestSimplePath().length)
 
@@ -367,28 +351,5 @@ fun longestSimplePath(longestSimplePath: Graph.() -> Path) {
     }.build()
     val longestPath3 = graph3.longestSimplePath()
     assertEquals(6, longestPath3.length)
-
-    val graph4 = GraphBuilder().apply {
-        val a = addVertex("A")
-        val b = addVertex("B")
-        val c = addVertex("C")
-        val d = addVertex("D")
-        val e = addVertex("E")
-        val f = addVertex("F")
-        val g = addVertex("G")
-        val h = addVertex("H")
-        val i = addVertex("I")
-        val j = addVertex("J")
-        addConnection(a, b)
-        addConnection(a, c)
-        addConnection(b, d)
-        addConnection(c, e)
-        addConnection(c, f)
-        addConnection(b, g)
-        addConnection(d, i)
-        addConnection(g, h)
-        addConnection(h, j)
-    }.build()
-    val longestPath4 = graph4.longestSimplePath()
-    assertEquals(6, longestPath4.length)
 }
+
